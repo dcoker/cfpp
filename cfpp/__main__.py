@@ -19,10 +19,6 @@ RC_NOPE = 1
 def main(args=None):
     args = parse_args(args)
 
-    if args.version:
-        print(VERSION)
-        return RC_OK
-
     try:
         with open(args.filename, "r") as fp:
             parsed = json.loads(fp.read())
@@ -50,8 +46,8 @@ def parse_args(args):
                              'setting. Specify this option once for each '
                              'directory to add to the search path.')
     parser.add_argument('--version',
-                        default=False,
-                        action='store_true',
+                        action='version',
+                        version=VERSION,
                         help='Display version number and exit.')
     args = parser.parse_args(args)
     return args
