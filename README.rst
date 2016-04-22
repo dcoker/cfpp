@@ -143,7 +143,7 @@ Note that extrinsic functions can be composed. Example:
 
 ::
 
-    { "CFPP::StringSplit": ["\n", { "CFPP::FileToString": "urls.txt" } }
+    { "CFPP::StringSplit": ["\n", { "CFPP::FileToString": "urls.txt" } ] }
 
 Installing
 ----------
