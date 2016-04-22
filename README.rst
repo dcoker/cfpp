@@ -16,17 +16,26 @@ For example, the ``Ref`` function can refer to the value of Parameters or the
 ARNs of Resources created by the stack.
 
 While the intrinsic functions allow users to access runtime variables, the core
-CloudFormation language does not have many affordances for common devops tasks.
-The lack of support for injecting or reusing content, combined with the poor
-usability of editing large JSON documents, can result in users looking towards
-unnecessarily complex solutions to accomplish common tasks.
-
-cfpp adds "extrinsic" functions to CloudFormation templates. These extrinsic
+CloudFormation language does not have many affordances for common devops tasks
+that happen before the template is submitted for evaluation. cfpp addresses
+this gap by adding "extrinsic" functions to the language. These extrinsic
 functions allow you to inject content into a CloudFormation template before it
 is passed to the CloudFormation API for processing. The output of cfpp is
 stable-sorted, suitable for committing to version control, and informative
 when diffing. All extrinsic functions are evaluated before emitting the processed
 CloudFormation.
+
+Here are some tasks that the extrinsic functions can simplify:
+
+- Re-use of configuration information between templates (ex: mappings, conditions, outputs).
+
+- Injection of information from the configuration environment (ex: files, user's login ID).
+
+- Injection of JSON files directly into the JSON template, or as properly escaped strings.
+
+- Deploying single-file Lambda functions without the need to write the package a zip file on S3.
+
+- Composing MIME multipart strings for use with ``UserData`` and ``cloud-init``.
 
 Functions
 ---------
@@ -152,22 +161,81 @@ Installing
 
     pip install cfpp
 
-Example Usage
--------------
+Example: Basic Usage
+--------------------
 
-Procedurally:
+Rendering the template to a JSON file:
 
 ::
 
     $ cfpp stack.template > stack.json
-    $ aws cloudformation create-stack --stack-name my-stack --template-body file://./stack.json
+    $ aws cloudformation create-stack \
+        --stack-name my-stack \
+        --template-body file://./stack.json
 
 
-Using bash process-redirection:
+Rendering the template using bash process-redirection:
 
 ::
 
-    $ aws cloudformation create-stack --stack-name my-stack --template-body file://./<(cfpp stack.template)
+    $ aws cloudformation create-stack \
+        --stack-name my-stack \
+        --template-body file://<(cfpp stack.template)
+
+Example: Lambda Function
+------------------------
+
+Lambda function code can be embedded in CloudFormation templates, and the
+``{"CFPP::FileToString"}`` method can be used to inject a file directly
+into the template. See the ``examples`` directory for a complete example.
+
+Excerpt:
+
+::
+
+    "WordCountLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "LambdaExecutionRole",
+            "Arn"
+          ]
+        },
+        "Code": {
+          "ZipFile": {
+            "CFPP::FileToString": "func.py"
+          }
+        },
+        "Runtime": "python2.7",
+        "Timeout": "30"
+      }
+    }
+
+You can then manage your entire function lifecycle using the
+standard ``aws cloudformation`` command line tools. Example:
+
+::
+
+    $ STACK_NAME=s-$(date +%s)
+    $ aws cloudformation validate-template \
+        --template-body file://<(cfpp -s lambda lambda/lambda.template)
+    $ aws cloudformation create-stack --stack-name ${STACK_NAME} \
+        --template-body file://<(cfpp -s lambda lambda/lambda.template) \
+        --capabilities CAPABILITY_IAM
+    $ aws cloudformation update-stack --stack-name ${STACK_NAME} \
+        --template-body file://<(cfpp -s lambda lambda/lambda.template) \
+        --capabilities CAPABILITY_IAM
+    $ aws cloudformation wait stack-update-complete --stack-name ${STACK_NAME}
+    $ FUNCTION_NAME=$(aws cloudformation describe-stacks \
+        --stack-name ${STACK_NAME} \
+        --query 'Stacks[].Outputs[?OutputKey==`FunctionName`].OutputValue' \
+        --output text)
+    $ aws lambda invoke --function-name ${FUNCTION_NAME} \
+        --payload '{"URL": "s3://..."}' \
+        /dev/stdout
+
 
 Limitations
 -----------
