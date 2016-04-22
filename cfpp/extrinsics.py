@@ -36,20 +36,24 @@ def openfile(config, context, filename):
 
 
 @extrinsic
-def command(_, _2, arg):
+def command(_, context, arg):
     """command executes a command and returns its output (both stdout and
     stderr) as a string."""
-    return subprocess.check_output(arg)
+    _raise_unless_array_of_strings(context, arg)
+    # subprocess returns byte strings, but we want to use uniform string
+    # types throughout.
+    return unicode(subprocess.check_output(arg))
 
 
 @extrinsic
-def string_split(_, _2, arg):
+def string_split(_, context, arg):
     """string_split returns a list of the words in a string split by a
     separator.
 
     Example:
         {"CFPP::StringSplit": ["\n", "time\nafter\ntime"]}
     """
+    _raise_unless_array_of_strings(context, arg)
     return arg[1].split(arg[0])
 
 
@@ -94,7 +98,7 @@ def json_file(config, context, arg):
 
 
 @extrinsic
-def trim(config, context, arg):
+def trim(_, context, arg):
     """trim strips whitespace from the beginning and end of a string."""
     _raise_unless_string(context, arg)
     return arg.strip()
@@ -152,6 +156,14 @@ class FileNotFoundException(ContextException):
     def __init__(self, context, filename):
         message = "The file '%s' does not exist." % (filename,)
         super(FileNotFoundException, self).__init__(context, message)
+
+
+def _raise_unless_array_of_strings(context, arg):
+    if not isinstance(arg, list):
+        raise UnexpectedArgumentTypeException(context, list, arg)
+    for element in arg:
+        if not isinstance(element, unicode):
+            raise UnexpectedArgumentTypeException(context, unicode, element)
 
 
 def _raise_unless_string(context, arg):
