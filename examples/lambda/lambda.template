@@ -1,0 +1,121 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Lambda function for profiling an S3 object.",
+  "Resources": {
+    "LambdaExecutionRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [
+            {
+              "Effect": "Allow",
+              "Principal": {
+                "Service": [
+                  "lambda.amazonaws.com"
+                ]
+              },
+              "Action": [
+                "sts:AssumeRole"
+              ]
+            }
+          ]
+        },
+        "Path": "/",
+        "Policies": [
+          {
+            "PolicyName": "AllowWriteToLogs",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Resource": {
+                    "Fn::Join": [
+                      ":",
+                      [
+                        "arn:aws:logs",
+                        {
+                          "Ref": "AWS::Region"
+                        },
+                        {
+                          "Ref": "AWS::AccountId"
+                        },
+                        "*"
+                      ]
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "PolicyName": "AllowReadS3",
+            "PolicyDocument": {
+              "Version": "2012-10-17",
+              "Statement": [
+                {
+                  "Effect": "Allow",
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:ListAllMyBuckets"
+                  ],
+                  "Resource": [
+                    "arn:aws:s3:::*"
+                  ]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "WordCountLambdaFunction": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Handler": "index.handler",
+        "Role": {
+          "Fn::GetAtt": [
+            "LambdaExecutionRole",
+            "Arn"
+          ]
+        },
+        "Code": {
+          "ZipFile": {
+            "CFPP::FileToString": "func.py"
+          }
+        },
+        "Runtime": "python2.7",
+        "Timeout": "30"
+      }
+    }
+  },
+  "Outputs": {
+    "CallLambda": {
+      "Description": "awscli invocation to call this function",
+      "Value": {
+        "Fn::Join": [
+          "",
+          [
+            "aws lambda invoke --function-name ",
+            {
+              "Ref": "WordCountLambdaFunction"
+            },
+            " --payload '{\"URL\": \"s3://...\"}' /dev/stdout"
+          ]
+        ]
+      }
+    },
+    "FunctionName": {
+      "Description": "Name of function",
+      "Value": {
+        "Ref": "WordCountLambdaFunction"
+      }
+    }
+  }
+}
