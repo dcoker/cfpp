@@ -4,6 +4,7 @@
 cfpp
 ====
 
+-------------
 What is cfpp?
 -------------
 
@@ -37,6 +38,7 @@ Here are some tasks that the extrinsic functions can simplify:
 
 - Composing MIME multipart strings for use with ``UserData`` and ``cloud-init``.
 
+---------
 Functions
 ---------
 
@@ -46,9 +48,7 @@ Here are some of the functions that are implemented:
     Reads a file and injects its content into the template as a string, with
     leading and trailing whitespace removed.
 
-    Example:
-
-    ::
+    Example::
 
           "Description": {
             "CFPP::FileToString": "DESCRIPTION.txt"
@@ -57,9 +57,7 @@ Here are some of the functions that are implemented:
 ``CFPP::FileToStringRaw``
     Reads a file and injects its content into the template as a string.
 
-    Example:
-
-    ::
+    Example::
 
         "files" : {
           "/etc/mysql/my.cnf" : {
@@ -73,9 +71,7 @@ Here are some of the functions that are implemented:
 ``CFPP::JsonFileToString``
     Parses a local JSON file and re-serializes it to a string.
 
-    Example:
-
-    ::
+    Example::
 
         "files": {
           "/opt/app/config/config.yaml": {
@@ -90,9 +86,7 @@ Here are some of the functions that are implemented:
 ``CFPP::JsonFile``
     Reads a JSON file and injects its content in its JSON form.
 
-    Example:
-
-    ::
+    Example::
 
         "WebserverInstanceType": {
           "Description": "The machine type of the frontend instance.",
@@ -106,9 +100,7 @@ Here are some of the functions that are implemented:
     Compose a multipart MIME message from a list of component MIME types and payloads. This is useful for
     ``UserData`` properties.
 
-    Example:
-
-    ::
+    Example::
 
         "UserData": {
           "Fn::Base64": {
@@ -138,9 +130,7 @@ Here are some of the functions that are implemented:
 ``CFPP::Command``
     Executes a subprocess and injects its output into the template as a string.
 
-    Example:
-
-    ::
+    Example::
 
         "KeyName": {
             "Description": "SSH public key to install on the cluster.",
@@ -148,12 +138,11 @@ Here are some of the functions that are implemented:
             "Default": {"CFPP::Trim": {"CFPP::Command": ["/usr/bin/id", "-un"]}}
         }
 
-Note that extrinsic functions can be composed. Example:
-
-::
+Note that extrinsic functions can be composed. Example::
 
     { "CFPP::StringSplit": ["\n", { "CFPP::FileToString": "urls.txt" } ] }
 
+----------
 Installing
 ----------
 
@@ -161,27 +150,24 @@ Installing
 
     pip install cfpp
 
+--------------------
 Example: Basic Usage
 --------------------
 
-Rendering the template to a JSON file:
-
-::
+Rendering the template to a JSON file::
 
     $ cfpp stack.template > stack.json
     $ aws cloudformation create-stack \
         --stack-name my-stack \
         --template-body file://./stack.json
 
-
-Rendering the template using bash process-redirection:
-
-::
+Rendering the template using bash process-redirection::
 
     $ aws cloudformation create-stack \
         --stack-name my-stack \
         --template-body file://<(cfpp stack.template)
 
+------------------------
 Example: Lambda Function
 ------------------------
 
@@ -189,9 +175,7 @@ Lambda function code can be embedded in CloudFormation templates, and the
 ``{"CFPP::FileToString"}`` method can be used to inject a file directly
 into the template. See the ``examples`` directory for a complete example.
 
-Excerpt:
-
-::
+Excerpt::
 
     "WordCountLambdaFunction": {
       "Type": "AWS::Lambda::Function",
@@ -214,9 +198,7 @@ Excerpt:
     }
 
 You can then manage your entire function lifecycle using the
-standard ``aws cloudformation`` command line tools. Example:
-
-::
+standard ``aws cloudformation`` command line tools. Example::
 
     $ STACK_NAME=s-$(date +%s)
     $ aws cloudformation validate-template \
@@ -236,7 +218,7 @@ standard ``aws cloudformation`` command line tools. Example:
         --payload '{"URL": "s3://..."}' \
         /dev/stdout
 
-
+-----------
 Limitations
 -----------
 
