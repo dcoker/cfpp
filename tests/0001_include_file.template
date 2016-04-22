@@ -1,0 +1,43 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": {
+    "CFPP::FileToString": "sample_description.txt"
+  },
+  "Resources": {
+    "Instance": {
+      "Type": "AWS::EC2::Instance",
+      "Metadata": {
+        "InlinedJson": {
+          "CFPP::JsonFile": "sample_json.json"
+        },
+        "StringWithNewlines": {
+          "CFPP::FileToString": "sample_multiple_lines.txt"
+        },
+        "Trimmed": {
+          "CFPP::Trim": " flanked "
+        },
+        "SubprocessSplit": {
+          "CFPP::StringSplit": [
+            "\n",
+            {
+              "CFPP::Command": [
+                "/bin/echo",
+                "one\ntwo"
+              ]
+            }
+          ]
+        },
+        "Array": [
+          {
+            "CFPP::JsonFile": "sample_json.json"
+          },
+          {
+            "CFPP::JsonFile": "sample_json.json"
+          }
+        ]
+      }
+    }
+  }
+}
+
+

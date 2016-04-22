@@ -1,0 +1,48 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09", 
+  "Outputs": {
+    "WebserverInstanceIp": {
+      "Description": "Webserver Private IP", 
+      "Value": {
+        "Fn::GetAtt": [
+          "WebserverInstance", 
+          "PrivateIp"
+        ]
+      }
+    }
+  }, 
+  "Resources": {
+    "WebserverInstance": {
+      "Properties": {
+        "AvailabilityZone": {
+          "Ref": "AvailabilityZone"
+        }, 
+        "ImageId": "ami-5189a661", 
+        "InstanceType": {
+          "Ref": "WebserverInstanceType"
+        }, 
+        "KeyName": {
+          "Ref": "KeyName"
+        }, 
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": true, 
+            "DeviceIndex": "0", 
+            "GroupSet": [
+              {
+                "Ref": "WebserverSecurityGroup"
+              }
+            ], 
+            "SubnetId": {
+              "Ref": "SubnetId"
+            }
+          }
+        ], 
+        "UserData": {
+          "Fn::Base64": "Content-Type: multipart/mixed;\n boundary=\"==========5b596103dbe29fd7cd7098d9e057f39a8bfe7e19===\"\nMIME-Version: 1.0\n\n--==========5b596103dbe29fd7cd7098d9e057f39a8bfe7e19===\nMIME-Version: 1.0\nContent-Type: text/#!/bin/bash -xe\n # This user-data script is run immediately on first boot of the machine.\n echo hello, world; charset=\"us-ascii\"\nContent-Transfer-Encoding: 7bit\n\n#!/bin/bash -xe\n# This user-data script is run immediately on first boot of the machine.\necho hello, world\n--==========5b596103dbe29fd7cd7098d9e057f39a8bfe7e19===\nMIME-Version: 1.0\nContent-Type: text/groups: - ubuntu:[foo,bar] - cloud-users; charset=\"us-ascii\"\nContent-Transfer-Encoding: 7bit\n\ngroups:\n  - ubuntu:[foo,bar]\n  - cloud-users\n\n--==========5b596103dbe29fd7cd7098d9e057f39a8bfe7e19===--\n"
+        }
+      }, 
+      "Type": "AWS::EC2::Instance"
+    }
+  }
+}

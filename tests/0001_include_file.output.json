@@ -1,0 +1,29 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09", 
+  "Description": "file with one line", 
+  "Resources": {
+    "Instance": {
+      "Metadata": {
+        "Array": [
+          {
+            "key": "value"
+          }, 
+          {
+            "key": "value"
+          }
+        ], 
+        "InlinedJson": {
+          "key": "value"
+        }, 
+        "StringWithNewlines": "line one\nline two\nline three", 
+        "SubprocessSplit": [
+          "one", 
+          "two", 
+          ""
+        ], 
+        "Trimmed": "flanked"
+      }, 
+      "Type": "AWS::EC2::Instance"
+    }
+  }
+}

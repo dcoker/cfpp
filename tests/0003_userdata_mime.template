@@ -1,0 +1,61 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Resources": {
+    "WebserverInstance": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "AvailabilityZone": {
+          "Ref": "AvailabilityZone"
+        },
+        "UserData": {
+          "Fn::Base64": {
+            "CFPP::MimeMultipart": [
+              [
+                "text/x-shellscript",
+                {
+                  "CFPP::FileToString": "sample_userdata.sh"
+                }
+              ],
+              [
+                "text/cloud-config",
+                "groups:\n  - ubuntu:[foo,bar]\n  - cloud-users\n"
+              ]
+            ]
+          }
+        },
+        "InstanceType": {
+          "Ref": "WebserverInstanceType"
+        },
+        "ImageId": "ami-5189a661",
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "NetworkInterfaces": [
+          {
+            "AssociatePublicIpAddress": true,
+            "DeviceIndex": "0",
+            "GroupSet": [
+              {
+                "Ref": "WebserverSecurityGroup"
+              }
+            ],
+            "SubnetId": {
+              "Ref": "SubnetId"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "Outputs": {
+    "WebserverInstanceIp": {
+      "Description": "Webserver Private IP",
+      "Value": {
+        "Fn::GetAtt": [
+          "WebserverInstance",
+          "PrivateIp"
+        ]
+      }
+    }
+  }
+}
