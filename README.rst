@@ -8,7 +8,7 @@ What is cfpp?
 -------------
 
 cfpp is a pre-processor for CloudFormation templates which adds additional
-functions to the JSON language.
+functions to the CloudFormation language.
 
 AWS CloudFormation provides several built-in functions that help you define
 your stacks. These "intrinsic" functions assign runtime values to properties.
@@ -24,8 +24,8 @@ unnecessarily complex solutions to accomplish common tasks.
 cfpp adds "extrinsic" functions to CloudFormation templates. These extrinsic
 functions allow you to inject content into a CloudFormation template before it
 is passed to the CloudFormation API for processing. The output of cfpp is
-stable-sorted, and suitable for committing to version control and for human
-diffing. All extrinsic functions are evaluated before emitting the processed
+stable-sorted, suitable for committing to version control, and informative
+when diffing. All extrinsic functions are evaluated before emitting the processed
 CloudFormation.
 
 Functions
@@ -137,7 +137,7 @@ Here are some of the functions that are implemented:
             "Description": "SSH public key to install on the cluster.",
             "Type": "AWS::EC2::KeyPair::KeyName"
             "Default": {"CFPP::Trim": {"CFPP::Command": ["/usr/bin/id", "-un"]}}
-        },
+        }
 
 Note that extrinsic functions can be composed. Example:
 
