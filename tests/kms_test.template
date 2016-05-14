@@ -1,0 +1,29 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "EncryptedValue": {
+      "Type": "String",
+      "Description": "An encrypted parameter",
+      "Default": {
+        "CFPP::KMS::EncryptFile": [
+          "alias/biscuit-x458",
+          "kms_test.template"
+        ]
+      }
+    },
+    "EncryptedValueWithContext": {
+      "Type": "String",
+      "Description": "An encrypted parameter",
+      "Default": {
+        "CFPP::KMS::EncryptFile": [
+          "alias/biscuit-x458",
+          "kms_test.template",
+          {
+            "ContextKey": "ContextValue"
+          }
+        ]
+      }
+    }
+  },
+  "Resources": {}
+}

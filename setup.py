@@ -27,6 +27,7 @@ setup(
     ],
     zip_safe=False,
     install_requires=[
+        'boto3>=1.3.0',
     ],
     test_suite='tests.test_cfpp',
     entry_points={

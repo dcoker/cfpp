@@ -1,6 +1,7 @@
 # coding=utf-8
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import base64
 import hashlib
 import json
 import subprocess
@@ -8,13 +9,15 @@ import sys
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+import boto3
 import os
 
 
 def get_func_or_raise(context, func_name):
     """get_func_or_raise returns the unbound function, or raises an exception
     if the method does not exist or is not allowed to be called."""
-    func = globals().get(func_name, None)
+    func_name_mangled = func_name.replace("::", "__")
+    func = globals().get(func_name_mangled, None)
     if func is None or not getattr(func, '_extrinsic', False):
         raise NoSuchMethodException(context, func_name)
     return func
@@ -128,6 +131,22 @@ def mime_multipart(_, context, arg):
     return mime_doc.as_string()
 
 
+@extrinsic
+def kms__encrypt_file(config, context, args):
+    _raise_unless_kms_encrypt_args(context, args)
+    key_id = args[0]
+    plaintext_filename = args[1]
+    encryption_context = {}
+    if len(args) == 3:
+        encryption_context = args[2]
+    kms = boto3.client('kms')
+    with openfile(config, context, plaintext_filename) as fp:
+        ciphertext = kms.encrypt(EncryptionContext=encryption_context,
+                                 KeyId=key_id,
+                                 Plaintext=fp.read())
+    return base64.b64encode(ciphertext["CiphertextBlob"])
+
+
 class ContextException(Exception):
     def __init__(self, context, message):
         message = "%s: %s" % (".".join(context), message)
@@ -152,6 +171,12 @@ class NoSuchMethodException(ContextException):
         super(NoSuchMethodException, self).__init__(context, message)
 
 
+class InsufficientArgsException(ContextException):
+    def __init__(self, context, expected):
+        message = "Expected %d arguments but got %d" % expected
+        super(InsufficientArgsException, self).__init__(context, message)
+
+
 class FileNotFoundException(ContextException):
     def __init__(self, context, filename):
         message = "The file '%s' does not exist." % (filename,)
@@ -164,6 +189,19 @@ def _raise_unless_array_of_strings(context, arg):
     for element in arg:
         if not isinstance(element, unicode):
             raise UnexpectedArgumentTypeException(context, unicode, element)
+
+
+def _raise_unless_kms_encrypt_args(context, arg):
+    if not isinstance(arg, list):
+        raise UnexpectedArgumentTypeException(context, list, arg)
+    if len(arg) < 2:
+        raise InsufficientArgsException(context, 2)
+    if not isinstance(arg[0], unicode):
+        raise UnexpectedArgumentTypeException(context, unicode, arg[0])
+    if not isinstance(arg[1], unicode):
+        raise UnexpectedArgumentTypeException(context, unicode, arg[1])
+    if len(arg) == 3 and not isinstance(arg[2], dict):
+        raise UnexpectedArgumentTypeException(context, dict, arg[2])
 
 
 def _raise_unless_string(context, arg):

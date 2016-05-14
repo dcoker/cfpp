@@ -138,6 +138,38 @@ Here are some of the functions that are implemented:
             "Default": {"CFPP::Trim": {"CFPP::Command": ["/usr/bin/id", "-un"]}}
         }
 
+``CFPP::Kms::EncryptFile``
+    Encrypts a small file (< 4KB) using a KMS key.
+
+    The first parameter must be a KMS KeyID that can be resolved by the AWS API (examples:
+    full key ARN, or strings prefixed by alias/ or key/). The second parameter is the name
+    of the file to encrypt. The third parameter is optional, and if present, is passed verbatim
+    as the EncryptionContext.
+
+    The returned ciphertext is base64 encoded binary data. Applications can pass the decoded
+    ciphertext to
+    `KMS Decrypt <http://docs.aws.amazon.com/kms/latest/APIReference/API_Decrypt.html>`
+    as ``CiphertextBlob`` to recover the plaintext value. Note that the receiving process
+    must be granted permission to decrypt the value using IAM Policies, KMS Key Policies,
+    or KMS Grants.
+
+    Example::
+
+        "files": {
+          "/opt/app/config/config.yaml": {
+            "content": {
+              "Fn::Join": [
+                "",
+                [
+                  "slack_api_key: ",
+                  { "CFFP::Kms::EncryptFile": [ "alias/production", "slack-api-key.txt" },
+                  ...
+
+
+-----------------
+Nested Extrinsics
+-----------------
+
 Note that extrinsic functions can be composed. Example::
 
     { "CFPP::StringSplit": ["\n", { "CFPP::FileToString": "urls.txt" } ] }

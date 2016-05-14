@@ -88,7 +88,7 @@ def apply_extrinsics(value, config, context):
 
 def camel_to_snake(name):
     # http://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-snake-case
-    underscores = re.sub('(.)([A-Z][a-z]+)', r'\1_\2', name)
+    underscores = re.sub('([^:])([A-Z][a-z]+)', r'\1_\2', name)
     first_word = re.sub('([a-z0-9])([A-Z])', r'\1_\2', underscores)
     lower_case = first_word.lower()
     return lower_case
