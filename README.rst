@@ -148,7 +148,7 @@ Here are some of the functions that are implemented:
 
     The returned ciphertext is base64 encoded binary data. Applications can pass the decoded
     ciphertext to
-    `KMS Decrypt <http://docs.aws.amazon.com/kms/latest/APIReference/API_Decrypt.html>`
+    `KMS Decrypt <http://docs.aws.amazon.com/kms/latest/APIReference/API_Decrypt.html>`_
     as ``CiphertextBlob`` to recover the plaintext value. Note that the receiving process
     must be granted permission to decrypt the value using IAM Policies, KMS Key Policies,
     or KMS Grants.
