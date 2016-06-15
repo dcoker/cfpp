@@ -2,6 +2,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import base64
+import collections
 import hashlib
 import json
 import subprocess
@@ -11,6 +12,9 @@ from email.mime.text import MIMEText
 
 import boto3
 import os
+import re
+
+FUNC_PREFIX = "CFPP::"
 
 
 def get_func_or_raise(context, func_name):
@@ -36,6 +40,30 @@ def openfile(config, context, filename):
         if os.path.exists(full_path):
             return open(full_path, "r")
     raise FileNotFoundException(context, filename)
+
+
+@extrinsic
+def include(config, context, arg):
+    """
+    include parses a JSON file, replaces Refs with values in the given dictionary, and
+    returns the results. This allows you to create reusable snippets of JSON with
+    Ref-style variables that can be optionally substituted for other refs or literal JSON.
+
+    Example:
+        "MyRole": ...,
+        "MyIAMPolicy": {
+            "CFPP::Include": [
+                "read-s3-policy.json",
+                {
+                    "PolicyName": "MyIAMPolicy",
+                    "RootRole": [{"Ref":"MyRole"}]
+                }
+            ]
+        }
+    """
+    _raise_unless_include_args(context, arg)
+    with openfile(config, context, arg[0]) as fp:
+        return walk(json.loads(fp.read()), config, context, arg[1])
 
 
 @extrinsic
@@ -191,6 +219,15 @@ def _raise_unless_array_of_strings(context, arg):
             raise UnexpectedArgumentTypeException(context, unicode, element)
 
 
+def _raise_unless_include_args(context, arg):
+    if not isinstance(arg, list):
+        raise UnexpectedArgumentTypeException(context, list, arg)
+    if len(arg) < 2:
+        raise InsufficientArgsException(context, 2)
+    if len(arg) == 2 and not isinstance(arg[1], dict):
+        raise UnexpectedArgumentTypeException(context, dict, arg[1])
+
+
 def _raise_unless_kms_encrypt_args(context, arg):
     if not isinstance(arg, list):
         raise UnexpectedArgumentTypeException(context, list, arg)
@@ -216,3 +253,55 @@ def _raise_unless_filename(context, arg):
 def _raise_unless_mime_params(context, arg):
     if not isinstance(arg, list):
         raise UnexpectedArgumentTypeException(context, list, arg)
+
+
+def walk(node, config, path, parameters):
+    if is_ref(node) and node[node.keys()[0]] in parameters:
+        node = parameters[node[node.keys()[0]]]
+
+    if isinstance(node, list):
+        return [apply_extrinsics(walk(value, config, path + [i], parameters), config, path + [i], parameters)
+                for i, value in enumerate(node)]
+
+    if isinstance(node, collections.Mapping):
+        return {key: apply_extrinsics(walk(value, config, path + [key], parameters), config, path + [key], parameters)
+                for key, value in node.iteritems()}
+
+    if isinstance(node, int):
+        return node
+
+    if isinstance(node, unicode):
+        return node
+
+    raise UnexpectedNodeType(path, node)
+
+
+def is_ref(value):
+    return isinstance(value, collections.Mapping) \
+           and len(value) == 1 \
+           and value.keys()[0].lower() == "ref"
+
+
+def is_extrinsic_dict(value):
+    return isinstance(value, collections.Mapping) \
+           and len(value) == 1 \
+           and value.keys()[0].startswith(FUNC_PREFIX)
+
+
+def apply_extrinsics(value, config, context, parameters):
+    if is_ref(value) and value.keys()[0] in parameters:
+        value = parameters[value[value.keys()[0]]]
+    if not is_extrinsic_dict(value):
+        return value
+    func_name = camel_to_snake(value.keys()[0][len(FUNC_PREFIX):])
+    method = get_func_or_raise(context, func_name)
+    result = method(config, context, value.values()[0])
+    return result
+
+
+def camel_to_snake(name):
+    # http://stackoverflow.com/questions/1175208/elegant-python-function-to-convert-camelcase-to-snake-case
+    underscores = re.sub('([^:])([A-Z][a-z]+)', r'\1_\2', name)
+    first_word = re.sub('([a-z0-9])([A-Z])', r'\1_\2', underscores)
+    lower_case = first_word.lower()
+    return lower_case

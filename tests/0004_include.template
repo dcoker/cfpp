@@ -1,0 +1,18 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "",
+  "Resources": {
+    "IAMRoleFromTopTemplate": {},
+    "MyIAMPolicy": {
+      "CFPP::Include": [
+        "0004_policy_snippet.json",
+        {
+          "PolicyName": "PolicyNameFromTopTemplate",
+          "ExpectToBeReplacedRef": {
+            "Ref": "IAMRoleFromTopTemplate"
+          }
+        }
+      ]
+    }
+  }
+}

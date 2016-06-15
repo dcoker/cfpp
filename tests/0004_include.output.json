@@ -1,0 +1,31 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "",
+  "Resources": {
+    "MyIAMPolicy": {
+      "Properties": {
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "*",
+              "Effect": "Allow",
+              "Resource": "*"
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "PolicyName": "PolicyNameFromTopTemplate",
+        "Roles": [
+          {
+            "Ref": "IAMRoleFromTopTemplate"
+          },
+          {
+            "Ref": "EvaluationDeferredRef"
+          }
+        ]
+      },
+      "Type": "AWS::IAM::Policy"
+    },
+    "IAMRoleFromTopTemplate": {}
+  }
+}
