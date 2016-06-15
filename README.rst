@@ -83,6 +83,24 @@ Here are some of the functions that are implemented:
                   { "CFFP::JsonFileToString": "mappings.json" },
                   ...
 
+``CFPP::Include``
+    Include parses a JSON file, replaces Refs with values in the given dictionary, and
+    returns the results. This allows you to create reusable snippets of JSON with
+    Ref-style variables that can be optionally substituted for other refs or literal JSON.
+
+    Example::
+
+        "MyRole": ...,
+        "MyIAMPolicy": {
+            "CFPP::Include": [
+                "read-s3-policy.json",
+                {
+                    "PolicyName": "MyIAMPolicy",
+                    "RootRole": [{"Ref":"MyRole"}]
+                }
+            ]
+        }
+
 ``CFPP::JsonFile``
     Reads a JSON file and injects its content in its JSON form.
 
