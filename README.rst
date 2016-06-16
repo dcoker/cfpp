@@ -156,6 +156,21 @@ Here are some of the functions that are implemented:
             "Default": {"CFPP::Trim": {"CFPP::Command": ["/usr/bin/id", "-un"]}}
         }
 
+``CFPP::Strftime``
+
+    strftime returns the current time (in UTC) converted to the format
+    specified by the first argument. The format is specified using
+    Python's time.strftime format (
+    https://docs.python.org/2/library/time.html#time.strftime).
+
+    Example::
+
+        {"CFPP::Strftime": "%Y%m%d_%H%M%S"}  ==>  20060102_220405
+
+    Note: use special care when using this function with CloudFormation's
+    "update" functionality. The output of this function will change each
+    time cfpp is run.
+
 ``CFPP::Kms::EncryptFile``
     Encrypts a small file (< 4KB) using a KMS key.
 

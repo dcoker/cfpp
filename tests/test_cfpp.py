@@ -7,6 +7,8 @@ import subprocess
 import unittest
 from glob import glob
 
+import time
+
 import os
 
 
@@ -72,6 +74,17 @@ class TestCfpp(unittest.TestCase):
         from cfpp.extrinsics import walk
         self.assertEqual("ex", walk({"Ref": "X"}, {}, "root", {"X": "ex"}))
         self.assertEqual({"O": "ex"}, walk({"O": {"Ref": "X"}}, {}, ["root"], {"X": "ex"}))
+
+    def test_strftime(self):
+        from cfpp.extrinsics import strftime
+        self.assertEqual("2006-01-02 22:04:05", strftime(None, None, "%Y-%m-%d %H:%M:%S",
+                                                         now=time.gmtime(1136239445)))
+
+    def test_strftime_e2e(self):
+        output = subprocess.check_output(
+            ["cfpp", "-s", "tests", "tests/strftime_test.template"])
+        value = json.loads(output)[0]
+        self.assertRegexpMatches(value, r"^2\d{7}_\d{6}$")
 
 
 if __name__ == '__main__':
