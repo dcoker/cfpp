@@ -157,7 +157,6 @@ Here are some of the functions that are implemented:
         }
 
 ``CFPP::Strftime``
-
     strftime returns the current time (in UTC) converted to the format
     specified by the first argument. The format is specified using
     Python's time.strftime format (
