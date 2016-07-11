@@ -19,6 +19,11 @@ import re
 FUNC_PREFIX = "CFPP::"
 
 
+class Config:
+    def __init__(self, **kwargs):
+        self.search_path = kwargs.get('search_path', [])
+
+
 def get_func_or_raise(context, func_name):
     """get_func_or_raise returns the unbound function, or raises an exception
     if the method does not exist or is not allowed to be called."""
@@ -84,7 +89,7 @@ def include(config, context, arg):
     """
     _raise_unless_include_args(context, arg)
     with openfile(config, context, arg[0]) as fp:
-        return walk(json.loads(fp.read()), config, context, arg[1])
+        return _walk(json.loads(fp.read()), config, context, arg[1])
 
 
 @extrinsic
@@ -276,16 +281,16 @@ def _raise_unless_mime_params(context, arg):
         raise UnexpectedArgumentTypeException(context, list, arg)
 
 
-def walk(node, config, path, parameters):
+def _walk(node, config, path, parameters):
     if is_ref(node) and node[node.keys()[0]] in parameters:
         node = parameters[node[node.keys()[0]]]
 
     if isinstance(node, list):
-        return [apply_extrinsics(walk(value, config, path + [i], parameters), config, path + [i], parameters)
+        return [apply_extrinsics(_walk(value, config, path + [i], parameters), config, path + [i], parameters)
                 for i, value in enumerate(node)]
 
     if isinstance(node, collections.Mapping):
-        return {key: apply_extrinsics(walk(value, config, path + [key], parameters), config, path + [key], parameters)
+        return {key: apply_extrinsics(_walk(value, config, path + [key], parameters), config, path + [key], parameters)
                 for key, value in node.iteritems()}
 
     if isinstance(node, int):
@@ -295,6 +300,10 @@ def walk(node, config, path, parameters):
         return node
 
     raise UnexpectedNodeType(path, node)
+
+
+def walk(node, **kwargs):
+    return _walk(node, Config(**kwargs), ['$'], {})
 
 
 def is_ref(value):
