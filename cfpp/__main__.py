@@ -18,7 +18,7 @@ def main(args=None):
     try:
         with open(args.filename, "r") as fp:
             parsed = json.loads(fp.read())
-            parsed = extrinsics.walk(parsed, args, ['$'], {})
+            parsed = extrinsics.walk(parsed, search_path=args.search_path)
             print(json.dumps(parsed, indent=2, sort_keys=True))
     except extrinsics.ContextException as e:
         print(e.message, file=sys.stderr)

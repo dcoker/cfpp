@@ -71,9 +71,9 @@ class TestCfpp(unittest.TestCase):
         self.assertFalse(is_ref({"X": "Y", "Z": "0"}))
 
     def test_walk_var_substitution(self):
-        from cfpp.extrinsics import walk
-        self.assertEqual("ex", walk({"Ref": "X"}, {}, "root", {"X": "ex"}))
-        self.assertEqual({"O": "ex"}, walk({"O": {"Ref": "X"}}, {}, ["root"], {"X": "ex"}))
+        from cfpp.extrinsics import _walk
+        self.assertEqual("ex", _walk({"Ref": "X"}, {}, "root", {"X": "ex"}))
+        self.assertEqual({"O": "ex"}, _walk({"O": {"Ref": "X"}}, {}, ["root"], {"X": "ex"}))
 
     def test_strftime(self):
         from cfpp.extrinsics import strftime
