@@ -19,9 +19,7 @@ import re
 FUNC_PREFIX = "CFPP::"
 
 
-class Config:
-    def __init__(self, **kwargs):
-        self.search_path = kwargs.get('search_path', [])
+Config = collections.namedtuple('Config', ['search_path'])
 
 
 def get_func_or_raise(context, func_name):
