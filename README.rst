@@ -197,6 +197,26 @@ Here are some of the functions that are implemented:
                   { "CFFP::Kms::EncryptFile": [ "alias/production", "slack-api-key.txt" },
                   ...
 
+``CFPP::Merge``
+    Merges an array of JSON objects into one JSON object. If multiple JSON
+    objects define the same field, the last definition will override the
+    earlier ones.
+
+    Example::
+
+        "Parameters": {
+          "CFPP::Merge": [
+            {
+              "CFPP::JsonFile": "common-parameters.json"
+            },
+            {
+              "LocalParameter1": {...},
+              "LocalParameter2": {...},
+              ...
+            }
+          ]
+        }
+
 
 -----------------
 Nested Extrinsics
