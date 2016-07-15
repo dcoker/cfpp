@@ -199,6 +199,15 @@ def kms__encrypt_file(config, context, args):
     return base64.b64encode(ciphertext["CiphertextBlob"])
 
 
+@extrinsic
+def merge(config, context, args):
+    _raise_unless_array_of_dictionaries(context, args)
+    result = {}
+    for arg in args:
+        result.update(arg)
+    return result
+
+
 class ContextException(Exception):
     def __init__(self, context, message):
         message = "%s: %s" % (".".join(context), message)
@@ -241,6 +250,14 @@ def _raise_unless_array_of_strings(context, arg):
     for element in arg:
         if not isinstance(element, unicode):
             raise UnexpectedArgumentTypeException(context, unicode, element)
+
+
+def _raise_unless_array_of_dictionaries(context, arg):
+    if not isinstance(arg, list):
+        raise UnexpectedArgumentTypeException(context, list, arg)
+    for element in arg:
+        if not isinstance(element, dict):
+            raise UnexpectedArgumentTypeException(context, dict, element)
 
 
 def _raise_unless_include_args(context, arg):
