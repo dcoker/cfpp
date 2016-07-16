@@ -1,0 +1,15 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "",
+  "Resources": {
+    "FirstResource": {
+      "Tag": "FirstTag"
+    },
+    "SecondResource": {
+      "Tag": "SecondTag"
+    },
+    "OverriddenResource": {
+      "Tag": "OverriddenTag"
+    }
+  }
+}

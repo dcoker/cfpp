@@ -1,0 +1,8 @@
+{
+  "FirstResource": {
+    "Tag": "FirstTag"
+  },
+  "OverriddenResource": {
+    "Tag": "OriginalTag"
+  }
+}
